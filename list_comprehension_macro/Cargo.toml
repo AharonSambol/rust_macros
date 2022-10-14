@@ -1,0 +1,13 @@
+[package]
+name = "list_comprehension_macro"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "*"
+syn = { version = "*", features = ["extra-traits"] }
+proc-macro2 = "*"

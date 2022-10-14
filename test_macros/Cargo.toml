@@ -1,0 +1,10 @@
+[package]
+name = "test_macros"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+list_comprehension_macro = { path = "../list_comprehension_macro" }
+change_base_macro = { path = "../change_base_macro" }
