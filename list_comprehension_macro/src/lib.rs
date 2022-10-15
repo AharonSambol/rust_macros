@@ -2,17 +2,27 @@ use proc_macro::{TokenStream, TokenTree, Spacing};
 use std::fmt::Write;
 use std::str::FromStr;
 
+// 1 inplace comprehension
+
 #[proc_macro]
 pub fn comp(input: TokenStream) -> TokenStream {
     let input: Vec<TokenTree> = input.into_iter().collect();
     let mut map = String::new();
     let mut index = 0;
+    let mut is_hm = false;
     while index < input.len() {
         let token = &input[index];
-        if token.to_string() == "for" {
-            break;
+        let token_st = token.to_string();
+        if token_st == "for" {  break; }
+        if token_st == ":"
+            && is_space(token)
+            && (index == 0 || is_space(&input[index - 1]))
+        {
+            is_hm = true;
+            write!(&mut map, ", ").unwrap();
+        } else {
+            write_token(&mut map, token);
         }
-        write_token(&mut map, token);
         index += 1;
     }
     if index == input.len() {
@@ -38,8 +48,10 @@ pub fn comp(input: TokenStream) -> TokenStream {
         }
         cond = Some(condition);
     }
-
-    let mut res = String::from("{ let mut res = Vec::new();");
+    let mut res = String::from(
+        if is_hm {  "{ let mut res = std::collections::HashMap::new();" }
+        else        {  "{ let mut res = Vec::new();"    }
+    );
     let mut close = 0;
     for for_loop in for_loops {
         write!(&mut res, "for {} {{", for_loop).unwrap();
@@ -49,9 +61,13 @@ pub fn comp(input: TokenStream) -> TokenStream {
         write!(&mut res, "{} {{", cond).unwrap();
         close += 1;
     }
-    write!(&mut res, "res.push({});", map).unwrap();
+    if is_hm {
+        write!(&mut res, "res.insert({});", map).unwrap();
+    } else {
+        write!(&mut res, "res.push({});", map).unwrap();
+    }
     write!(&mut res, "{} res }}", "}".repeat(close)).unwrap();
-    // dbg!(&res);
+    dbg!(&res);
     TokenStream::from_str(&res).unwrap()
 }
 
@@ -68,6 +84,6 @@ fn write_token(str: &mut String, token: &TokenTree){
     if is_space(&token) {
         write!(str, "{} ", token.to_string()).unwrap();
     } else {
-        write!(str, "{}", token.to_string()).unwrap();
+        write!(str, "{}",  token.to_string()).unwrap();
     }
 }
