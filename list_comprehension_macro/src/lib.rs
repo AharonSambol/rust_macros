@@ -2,7 +2,6 @@ use proc_macro::{TokenStream, TokenTree, Spacing};
 use std::fmt::Write;
 use std::str::FromStr;
 
-// 1 inplace comprehension
 
 #[proc_macro]
 pub fn comp(input: TokenStream) -> TokenStream {
@@ -13,11 +12,10 @@ pub fn comp(input: TokenStream) -> TokenStream {
     while index < input.len() {
         let token = &input[index];
         let token_st = token.to_string();
-        if token_st == "for" {  break; }
-        if token_st == ":"
-            && is_space(token)
-            && (index == 0 || is_space(&input[index - 1]))
-        {
+        if let "for" | "while" = token_st.as_str() {
+            break;
+        }
+        if is_lone_colon(&input, index, token, &token_st) {
             is_hm = true;
             write!(&mut map, ", ").unwrap();
         } else {
@@ -28,17 +26,19 @@ pub fn comp(input: TokenStream) -> TokenStream {
     if index == input.len() {
         panic!("list comprehension needs a `for` but none were found")
     }
-    let mut for_loops = Vec::new();
-    while index < input.len() && input[index].to_string() == "for" {
-        let mut cur_for = String::new();
+    let mut loops = Vec::new();
+    while index < input.len() &&
+        matches!(input[index].to_string().as_str(), "for" | "while")
+    {
+        let mut cur_for = String::from(input[index].to_string() + " ");
         index += 1;
         while index < input.len() {
             let token = &input[index];
-            if let "for" | "if" = token.to_string().as_str() {  break; }
+            if let "while" | "for" | "if" = token.to_string().as_str() {  break; }
             write_token(&mut cur_for, &token);
             index += 1;
         }
-        for_loops.push(cur_for);
+        loops.push(cur_for);
     }
     let mut cond = None;
     if index != input.len() {
@@ -50,11 +50,11 @@ pub fn comp(input: TokenStream) -> TokenStream {
     }
     let mut res = String::from(
         if is_hm {  "{ let mut res = std::collections::HashMap::new();" }
-        else        {  "{ let mut res = Vec::new();"    }
+        else     {  "{ let mut res = Vec::new();"    }
     );
     let mut close = 0;
-    for for_loop in for_loops {
-        write!(&mut res, "for {} {{", for_loop).unwrap();
+    for loop_ in loops {
+        write!(&mut res, "{} {{", loop_).unwrap();
         close += 1;
     }
     if let Some(cond) = cond {
@@ -69,6 +69,12 @@ pub fn comp(input: TokenStream) -> TokenStream {
     write!(&mut res, "{} res }}", "}".repeat(close)).unwrap();
     dbg!(&res);
     TokenStream::from_str(&res).unwrap()
+}
+
+fn is_lone_colon(input: &Vec<TokenTree>, index: usize, token: &TokenTree, token_st: &String) -> bool {
+    token_st == ":"
+        && is_space(token)
+        && (index == 0 || is_space(&input[index - 1]))
 }
 
 fn is_space(token: &TokenTree) -> bool {

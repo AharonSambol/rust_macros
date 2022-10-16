@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 list_comprehension_macro = { path = "../list_comprehension_macro" }
 change_base_macro = { path = "../change_base_macro" }
+rand = "*"
