@@ -27,9 +27,7 @@ pub fn comp(input: TokenStream) -> TokenStream {
         panic!("list comprehension needs a `for` but none were found")
     }
     let mut loops = Vec::new();
-    while index < input.len() &&
-        matches!(input[index].to_string().as_str(), "for" | "while")
-    {
+    while index < input.len() && input[index].to_string().as_str() != "if" {
         let mut cur_for = String::from(input[index].to_string() + " ");
         index += 1;
         while index < input.len() {
@@ -67,17 +65,16 @@ pub fn comp(input: TokenStream) -> TokenStream {
         write!(&mut res, "res.push({});", map).unwrap();
     }
     write!(&mut res, "{} res }}", "}".repeat(close)).unwrap();
-    dbg!(&res);
     TokenStream::from_str(&res).unwrap()
 }
 
 fn is_lone_colon(input: &Vec<TokenTree>, index: usize, token: &TokenTree, token_st: &String) -> bool {
     token_st == ":"
-        && is_space(token)
-        && (index == 0 || is_space(&input[index - 1]))
+        && is_spaced(token)
+        && (index == 0 || is_spaced(&input[index - 1]))
 }
 
-fn is_space(token: &TokenTree) -> bool {
+fn is_spaced(token: &TokenTree) -> bool {
     if let TokenTree::Punct(punct) = token {
         if let Spacing::Joint = punct.spacing() {
             return false;
@@ -87,7 +84,7 @@ fn is_space(token: &TokenTree) -> bool {
 }
 
 fn write_token(str: &mut String, token: &TokenTree){
-    if is_space(&token) {
+    if is_spaced(&token) {
         write!(str, "{} ", token.to_string()).unwrap();
     } else {
         write!(str, "{}",  token.to_string()).unwrap();
