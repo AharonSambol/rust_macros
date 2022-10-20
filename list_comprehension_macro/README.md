@@ -16,8 +16,13 @@ let flatten_matrix = comp![x for row in arr for x in row]
 let dict_comp = comp!{x: x.len() for x in arr}
 ```
 
+# Install
+Add the following line to your Cargo.toml file:
+```toml
+list_comprehension_macro = "0.1.1"
+```
 
-# Examples:
+# Examples
 ```rust
 use list_comprehension_macro::comp;
 
@@ -97,7 +102,7 @@ fn main() {
 
 
 
-# Note:
+# Note
 
 A comprehension like this:
 ```rust
