@@ -2,7 +2,7 @@
 name = "list_comprehension_macro"
 version = "0.1.0"
 edition = "2021"
-keywords = ["comprehension", "comprehensions", "vector", "hashmap", "macro"]
+keywords = ["python", "comprehension", "comprehensions", "vector", "hashmap", "macro"]
 categories = ["algorithms"]
 description = "A macro for making Python like Vector and HashMap comprehensions"
 homepage = "https://github.com/AharonSambol/rust_macros/tree/main/list_comprehension_macro"

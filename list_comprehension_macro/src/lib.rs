@@ -1,10 +1,57 @@
 use proc_macro::{TokenStream, TokenTree, Spacing};
+use std::collections::HashSet;
 use std::fmt::Write;
 use std::str::FromStr;
 
 
 #[proc_macro]
 pub fn comp(input: TokenStream) -> TokenStream {
+    let (value, is_hm, loops, cond, _)
+        = parse_comprehension(input, false);
+    let mut res = String::from(
+        if is_hm {  "{ let mut res = std::collections::HashMap::new();" }
+        else     {  "{ let mut res = Vec::new();"    }
+    );
+    let mut close = 0;
+    for loop_ in loops {
+        write!(&mut res, "{} {{", loop_).unwrap();
+        close += 1;
+    }
+    if let Some(cond) = cond {
+        write!(&mut res, "{} {{", cond).unwrap();
+        close += 1;
+    }
+    if is_hm {
+        write!(&mut res, "res.insert({});", value).unwrap();
+    } else {
+        write!(&mut res, "res.push({});", value).unwrap();
+    }
+    write!(&mut res, "{} res }}", "}".repeat(close)).unwrap();
+    TokenStream::from_str(&res).unwrap()
+}
+
+#[proc_macro]
+pub fn i_comp(input: TokenStream) -> TokenStream {
+    let (mut value, is_hm, _, cond, iter)
+        = parse_comprehension(input, true);
+
+    let iter = iter.unwrap();
+    let mut res = iter.iter;
+    if is_hm {
+        value = format!("({})", value);
+    }
+    if let Some(cond) = cond {
+        write!(&mut res,
+               ".filter_map(|{}| {} {{ Some({}) }} else {{ None }})",
+               iter.var, cond, value
+        ).unwrap();
+    } else {
+        write!(&mut res, ".map(|{}| {})", iter.var, value).unwrap();
+    }
+    TokenStream::from_str(&res).unwrap()
+}
+
+fn parse_comprehension(input: TokenStream, is_iter :bool) -> (String, bool, Vec<String>, Option<String>, Option<LoopParts>) {
     let input: Vec<TokenTree> = input.into_iter().collect();
     let mut map = String::new();
     let mut index = 0;
@@ -26,14 +73,22 @@ pub fn comp(input: TokenStream) -> TokenStream {
     if index == input.len() {
         panic!("list comprehension needs a `for` but none were found")
     }
+    let mut iter_var = None;
     let mut loops = Vec::new();
-    while index < input.len() && input[index].to_string().as_str() != "if" {
-        let mut cur_for = String::from(input[index].to_string() + " ");
+    'loops: while index < input.len() && input[index].to_string().as_str() != "if" {
+        let mut cur_for = format!("{} ", input[index].to_string());
         index += 1;
-        while index < input.len() {
-            let token = &input[index];
-            if let "while" | "for" | "if" = token.to_string().as_str() {  break; }
-            write_token(&mut cur_for, &token);
+        while index < input.len() &&
+            !matches!(input[index].to_string().as_str(), "while" | "for" | "if")
+        {
+            if is_iter {
+                iter_var = Some(get_iter_var(&input, &mut index));
+                if index < input.len() && input[index].to_string().as_str() != "if" {
+                    panic!("can't have more than one loop in `i_comp` try using `comp` instead");
+                }
+                break 'loops;
+            }
+            write_token(&mut cur_for, &input[index]);
             index += 1;
         }
         loops.push(cur_for);
@@ -46,26 +101,28 @@ pub fn comp(input: TokenStream) -> TokenStream {
         }
         cond = Some(condition);
     }
-    let mut res = String::from(
-        if is_hm {  "{ let mut res = std::collections::HashMap::new();" }
-        else     {  "{ let mut res = Vec::new();"    }
-    );
-    let mut close = 0;
-    for loop_ in loops {
-        write!(&mut res, "{} {{", loop_).unwrap();
-        close += 1;
+    (map, is_hm, loops, cond, iter_var)
+}
+
+struct LoopParts {
+    iter: String,
+    var: String
+}
+
+fn get_iter_var(input: &Vec<TokenTree>, index: &mut usize) -> LoopParts {
+    LoopParts {
+        var:  get_until(input, index, HashSet::from(["in"])),
+        iter: get_until(input, {*index+=1; index}, HashSet::from(["while", "for", "if"]))
     }
-    if let Some(cond) = cond {
-        write!(&mut res, "{} {{", cond).unwrap();
-        close += 1;
+}
+
+fn get_until(input: &Vec<TokenTree>, index: &mut usize, until: HashSet<&str>) -> String {
+    let mut str = String::new();
+    while *index < input.len() && !until.contains(input[*index].to_string().as_str()) {
+        write_token(&mut str, &input[*index]);
+        *index += 1;
     }
-    if is_hm {
-        write!(&mut res, "res.insert({});", map).unwrap();
-    } else {
-        write!(&mut res, "res.push({});", map).unwrap();
-    }
-    write!(&mut res, "{} res }}", "}".repeat(close)).unwrap();
-    TokenStream::from_str(&res).unwrap()
+    str
 }
 
 fn is_lone_colon(input: &Vec<TokenTree>, index: usize, token: &TokenTree, token_st: &String) -> bool {

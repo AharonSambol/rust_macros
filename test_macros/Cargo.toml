@@ -9,3 +9,8 @@ edition = "2021"
 list_comprehension_macro = { path = "../list_comprehension_macro" }
 change_base_macro = { path = "../change_base_macro" }
 rand = "*"
+bencher = "0.1.5"
+
+#[[bench]]
+#name = "main"
+#harness = false

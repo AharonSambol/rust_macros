@@ -17,7 +17,7 @@ let dict_comp = comp!{x: x.len() for x in arr}
 ```
 
 
-## Examples:
+# Examples:
 ```rust
 use list_comprehension_macro::comp;
 
@@ -74,7 +74,30 @@ fn main() {
 }
 ```
 
-## Note:
+# Iterators
+
+Instead of calculating the whole comprehension at once, you might want to get a lazy iterator. To do that use `i_comp!` instead of `comp!`. However there are a few limitations:
+
+* Only one loop is allowed (and only a `for` loop)
+* You must pass it an iterator
+
+## Example:
+```rust
+use list_comprehension_macro::i_comp;
+
+fn main() {
+    let arr: Vec<u32> = vec![1, 2, 3, 4];
+    let mut iter = i_comp![x * 2 for x in arr.iter() if *x != 3];
+    println!("{}", iter.next().unwrap()); // 2
+    println!("{}", iter.next().unwrap()); // 4
+    println!("{}", iter.next().unwrap()); // 8
+}
+```
+
+
+
+
+# Note:
 
 A comprehension like this:
 ```rust
