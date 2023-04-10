@@ -1,0 +1,19 @@
+[package]
+name = "fstr"
+version = "0.1.0"
+edition = "2021"
+keywords = ["python", "fstring", "format", "string"]
+description = "A macro for making Python like fstrings"
+homepage = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
+repository = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
+documentation = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
+readme = "README.md"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+proc-macro = true
+
+[dependencies]
+litrs = "0.4.0"
+quote = "*"
