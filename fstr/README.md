@@ -18,7 +18,7 @@ def main():
 
 ## Rust equivalent:
 ```rust
-use fstr::f;
+use py_fstr::f;
 
 fn add_one(i: i32) -> i32 {
     i + 1
@@ -34,5 +34,5 @@ fn main() {
 # Install
 Add the following line to your Cargo.toml file:
 ```toml
-fstr = "0.1.0"
+py_fstr = "0.1.0"
 ```

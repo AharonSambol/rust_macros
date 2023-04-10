@@ -1,12 +1,12 @@
 [package]
-name = "fstr"
+name = "py_fstr"
 version = "0.1.0"
 edition = "2021"
 keywords = ["python", "fstring", "format", "string"]
 description = "A macro for making Python like fstrings"
-homepage = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
-repository = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
-documentation = "https://github.com/AharonSambol/rust_macros/tree/main/fstr"
+homepage = "https://github.com/AharonSambol/rust_macros/tree/main/py_fstr"
+repository = "https://github.com/AharonSambol/rust_macros/tree/main/py_fstr"
+documentation = "https://github.com/AharonSambol/rust_macros/tree/main/py_fstr"
 readme = "README.md"
 license = "MIT"
 

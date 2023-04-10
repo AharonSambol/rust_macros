@@ -3,14 +3,6 @@
 version = 3
 
 [[package]]
-name = "fstr"
-version = "0.1.0"
-dependencies = [
- "litrs",
- "quote",
-]
-
-[[package]]
 name = "litrs"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -26,6 +18,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "py_fstr"
+version = "0.1.0"
+dependencies = [
+ "litrs",
+ "quote",
 ]
 
 [[package]]
