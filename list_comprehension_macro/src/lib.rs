@@ -6,8 +6,8 @@ use std::str::FromStr;
 
 #[proc_macro]
 pub fn comp(input: TokenStream) -> TokenStream {
-    let (value, is_hm, loops, cond, _)
-        = parse_comprehension(input, false);
+    let (value, is_hm, loops, cond)
+        = parse_comprehension(input);
     let mut res = String::from(
         if is_hm {  "{ let mut res = std::collections::HashMap::new();" }
         else     {  "{ let mut res = Vec::new();"    }
@@ -32,11 +32,10 @@ pub fn comp(input: TokenStream) -> TokenStream {
 
 #[proc_macro]
 pub fn i_comp(input: TokenStream) -> TokenStream {
-    let (mut value, is_hm, _, cond, iter)
-        = parse_comprehension(input, true);
+    let (mut value, is_hm, loops, cond)
+        = parse_comprehension(input);
 
-    let iter = iter.unwrap();
-    let mut res = iter.iter;
+    // let mut res = get_until(loop, {*index+=1; index}, HashSet::from(["while", "for", "if"]));
     if is_hm {
         value = format!("({})", value);
     }
@@ -51,7 +50,7 @@ pub fn i_comp(input: TokenStream) -> TokenStream {
     TokenStream::from_str(&res).unwrap()
 }
 
-fn parse_comprehension(input: TokenStream, is_iter :bool) -> (String, bool, Vec<String>, Option<String>, Option<LoopParts>) {
+fn parse_comprehension(input: TokenStream) -> (String, bool, Vec<String>, Option<String>) {
     let input: Vec<TokenTree> = input.into_iter().collect();
     let mut map = String::new();
     let mut index = 0;
@@ -73,7 +72,6 @@ fn parse_comprehension(input: TokenStream, is_iter :bool) -> (String, bool, Vec<
     if index == input.len() {
         panic!("list comprehension needs a `for` but none were found")
     }
-    let mut iter_var = None;
     let mut loops = Vec::new();
     'loops: while index < input.len() && input[index].to_string().as_str() != "if" {
         let mut cur_for = format!("{} ", input[index].to_string());
@@ -81,13 +79,13 @@ fn parse_comprehension(input: TokenStream, is_iter :bool) -> (String, bool, Vec<
         while index < input.len() &&
             !matches!(input[index].to_string().as_str(), "while" | "for" | "if")
         {
-            if is_iter {
-                iter_var = Some(get_iter_var(&input, &mut index));
-                if index < input.len() && input[index].to_string().as_str() != "if" {
-                    panic!("can't have more than one loop in `i_comp` try using `comp` instead");
-                }
-                break 'loops;
-            }
+            // if is_iter {
+            //     iter_var = Some(get_iter_var(&input, &mut index));
+            //     if index < input.len() && input[index].to_string().as_str() != "if" {
+            //         panic!("can't have more than one loop in `i_comp` try using `comp` instead");
+            //     }
+            //     break 'loops;
+            // }
             write_token(&mut cur_for, &input[index]);
             index += 1;
         }
@@ -101,7 +99,7 @@ fn parse_comprehension(input: TokenStream, is_iter :bool) -> (String, bool, Vec<
         }
         cond = Some(condition);
     }
-    (map, is_hm, loops, cond, iter_var)
+    (map, is_hm, loops, cond)
 }
 
 struct LoopParts {

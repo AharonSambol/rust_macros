@@ -37,7 +37,7 @@ checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
 
 [[package]]
 name = "list_comprehension_macro"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "ppv-lite86"
