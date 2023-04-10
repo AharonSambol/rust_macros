@@ -16,4 +16,4 @@ proc-macro = true
 
 [dependencies]
 litrs = "0.4.0"
-quote = "*"
+quote = "1.0.26"
