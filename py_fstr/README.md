@@ -11,7 +11,7 @@ def add_one(i: int) -> int:
 
 def main():
     b = 3
-    a = f"awow look { add_one(b * 2) }!"
+    a = f"wow look { add_one(b * 2) }!"
     print(a)
 ```
 
@@ -26,7 +26,7 @@ fn add_one(i: i32) -> i32 {
 
 fn main() {
     let b = 3;
-    let a = f!("awow look { add_one(b * 2) }!");
+    let a = f!("wow look { add_one(b * 2) }!");
     println!("{a}");
 }
 ```
